@@ -1,0 +1,2 @@
+CREATE USER nessie WITH PASSWORD 'nessie';
+CREATE DATABASE nessie OWNER nessie;
