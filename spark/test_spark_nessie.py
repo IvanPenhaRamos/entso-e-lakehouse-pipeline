@@ -10,6 +10,7 @@ spark = SparkSession.builder \
                 .config("spark.sql.catalog.nessie.catalog-impl", "org.apache.iceberg.nessie.NessieCatalog") \
                 .config("spark.sql.catalog.nessie.uri", "http://nessie:19120/api/v1") \
                 .config("spark.sql.catalog.nessie.ref", "main") \
+                .config("spark.sql.catalog.nessie.warehouse","s3a://raw/iceberg") \
                 .config("spark.hadoop.fs.s3a.endpoint", "http://minio:9000") \
                 .config("spark.hadoop.fs.s3a.access.key", os.environ.get("MINIO_ROOT_USER")) \
                 .config("spark.hadoop.fs.s3a.secret.key", os.environ.get("MINIO_ROOT_PASSWORD")) \
@@ -20,6 +21,22 @@ spark = SparkSession.builder \
 
 print("SparkSession created successfully")
 print(f"Spark version: {spark.version}")
+
+spark.sparkContext.setLogLevel("WARN")
+
+print("Creating NAMESPACE...")
+spark.sql('CREATE NAMESPACE IF NOT EXISTS nessie.raw') # Namespace = Database dentro del catalog
+print("Namespace created successfully")
+
+print("Creating testing table...")
+spark.sql('CREATE TABLE IF NOT EXISTS nessie.raw.testtbl(id bigint,data string) USING iceberg')
+print("Table created successfully")
+
+print("Inserting data...")
+spark.sql('INSERT INTO nessie.raw.testtbl VALUES(1,"Everything"),(2,"is"),(3,"running")')
+
+print("Reading data...")
+spark.sql('SELECT data FROM nessie.raw.testtbl').show()
 
 spark.stop()
 
