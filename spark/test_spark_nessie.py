@@ -19,24 +19,33 @@ spark = SparkSession.builder \
                 .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider") \
                 .getOrCreate()
 
+spark.sparkContext.setLogLevel("WARN")
+
 print("SparkSession created successfully")
 print(f"Spark version: {spark.version}")
 
-spark.sparkContext.setLogLevel("WARN")
-
 print("Creating NAMESPACE...")
-spark.sql('CREATE NAMESPACE IF NOT EXISTS nessie.raw') # Namespace = Database dentro del catalog
+spark.sql('CREATE NAMESPACE IF NOT EXISTS nessie.testdb') # Namespace = Database dentro del catalog
 print("Namespace created successfully")
 
-print("Creating testing table...")
-spark.sql('CREATE TABLE IF NOT EXISTS nessie.raw.testtbl(id bigint,data string) USING iceberg')
+print("Creating testing TABLE...")
+spark.sql('CREATE TABLE IF NOT EXISTS nessie.testdb.testtbl(id bigint,data string) USING iceberg')
 print("Table created successfully")
 
 print("Inserting data...")
-spark.sql('INSERT INTO nessie.raw.testtbl VALUES(1,"Everything"),(2,"is"),(3,"running")')
+spark.sql('INSERT INTO nessie.testdb.testtbl VALUES(1,"Everything"),(2,"is"),(3,"running")')
 
 print("Reading data...")
-spark.sql('SELECT data FROM nessie.raw.testtbl').show()
+spark.sql('SELECT data FROM nessie.testdb.testtbl').show()
+
+# Setting el garbage collector a true para poder eliminar la tabla. Warn sobre la herramienta de nessie-gc por su funcionamiento gitlike, pero es sólo un test
+spark.sql("ALTER TABLE nessie.testdb.testtbl SET TBLPROPERTIES ('gc.enabled'='true')")
+
+print("Deleting TABLE and PURGING data...")
+spark.sql('DROP TABLE nessie.testdb.testtbl PURGE')
+
+print("Deleting NAMESPACE...")
+spark.sql('DROP NAMESPACE nessie.testdb')
 
 spark.stop()
 
