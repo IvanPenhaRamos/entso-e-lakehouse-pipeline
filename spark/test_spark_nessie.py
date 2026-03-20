@@ -1,4 +1,4 @@
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession #type:ignore
 import os
 
 print("Starting SparkSession...")
