@@ -15,6 +15,7 @@ x-airflow-common: &airflow-common
     AIRFLOW_LASTNAME: ${AIRFLOW_LASTNAME}
     AIRFLOW_EMAIL: ${AIRFLOW_EMAIL}
     AIRFLOW_ROLE: ${AIRFLOW_ROLE}
+    PYTHONPATH: /opt/airflow # To resolve imports
   volumes:
     - ./dags:/opt/airflow/dags
     - ./spark:/opt/airflow/spark
