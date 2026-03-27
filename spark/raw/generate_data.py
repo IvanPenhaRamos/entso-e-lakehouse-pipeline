@@ -1,6 +1,7 @@
 from random import uniform
 
 from spark.spark_session import get_spark_session
+from spark.utils import chop_date
 
 COUNTRIES = ["ES", "PT", "FR", "GB", "IR", "DE"]
 PRODUCTION_TYPE = ["Solar", "Wind", "Hydro", "Nuclear", "Gas", "Coal", "Oil"]
@@ -11,10 +12,7 @@ def generate_data(execution_date: str):
     
     data = []
 
-    year = execution_date[:4]
-    month = execution_date[5:7]
-    day = execution_date[8:10]
-
+    year, month, day = chop_date(execution_date)
 
     for hour in range(24):
         for country in COUNTRIES:

@@ -1,14 +1,13 @@
 from pyspark.sql.functions import col, to_timestamp # type:ignore
 
 from spark.spark_session import get_spark_session
+from spark. utils import chop_date
 
 def transform_data(execution_date: str):
 
     spark = get_spark_session()
 
-    year = execution_date[:4]
-    month = execution_date[5:7]
-    day = execution_date[8:10]
+    year, month, day = chop_date(execution_date)
 
     df = spark.read \
     .option("basePath", "s3a://raw/entsoe/") \

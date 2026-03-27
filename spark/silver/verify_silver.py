@@ -1,16 +1,14 @@
 from spark.spark_session import get_spark_session
+from spark.utils import chop_date
 
 def verify_silver(execution_date):
 
     spark = get_spark_session()
 
-    
-    year = execution_date[:4]
-    month = execution_date[5:7]
-    day = execution_date[8:10]
+    year, month, day = chop_date(execution_date)
 
-    df = spark.read.option("basePath", "s3a://raw/entsoe/") \
-        .parquet(f"s3a://raw/entsoe/year={year}/month={month}/day={day}")
+    df = spark.read.option("basePath", "s3a://silver/entsoe/") \
+        .parquet(f"s3a://silver/entsoe/year={year}/month={month}/day={day}")
 
     count = df.count()
     
