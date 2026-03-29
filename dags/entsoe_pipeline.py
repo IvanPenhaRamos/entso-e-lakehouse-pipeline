@@ -7,7 +7,9 @@ from spark.raw.verify_raw import verify_raw
 from spark.silver.transform_data import transform_data
 from spark.silver.verify_silver import verify_silver
 from spark.gold.production_per_day_per_country import production_per_day_per_country
-from spark.gold.verify_gold import verify_gold
+from spark.gold.verify_production import verify_production
+from spark.gold.energy_mix_per_country import energy_mix_per_country
+from spark.gold.verify_energy_mix import verify_energy_mix
 
 
 with DAG(
@@ -21,6 +23,11 @@ with DAG(
     task_S1 = PythonOperator(task_id="transform_data", python_callable=transform_data, op_kwargs={"execution_date":"{{ ds }}"})
     task_S2 = PythonOperator(task_id="verify_silver", python_callable=verify_silver, op_kwargs={"execution_date":"{{ ds }}"})
     task_G1 = PythonOperator(task_id="production_per_day_per_country", python_callable=production_per_day_per_country, op_kwargs={"execution_date":"{{ ds }}"})
-    task_G2 = PythonOperator(task_id="verify_gold", python_callable=verify_gold, op_kwargs={"execution_date":"{{ ds }}"})
+    task_G1_verify = PythonOperator(task_id="verify_production", python_callable=verify_production, op_kwargs={"execution_date":"{{ ds }}"})
+    task_G2 = PythonOperator(task_id="energy_mix_per_country", python_callable=energy_mix_per_country, op_kwargs={"execution_date":"{{ ds }}"})
+    task_G2_verify = PythonOperator(task_id="verify_energy_mix", python_callable=verify_energy_mix, op_kwargs={"execution_date":"{{ ds }}"})
 
-    task_R1 >> task_R2 >> task_S1 >> task_S2 >> task_G1 >> task_G2
+
+    task_R1 >> task_R2 >> task_S1 >> task_S2 >> [task_G1, task_G2]
+    task_G1 >> task_G1_verify
+    task_G2 >> task_G2_verify

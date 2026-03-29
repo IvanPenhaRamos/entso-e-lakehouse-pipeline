@@ -1,4 +1,4 @@
-from pyspark.sql.functions import days, months, years #type:ignore
+from pyspark.sql.functions import days #type:ignore
 
 from spark.spark_session import get_spark_session
 from spark.utils import chop_date
@@ -31,3 +31,4 @@ def production_per_day_per_country(execution_date):
     gold_df.writeTo("nessie.gold.production_per_day_per_country") \
             .partitionedBy(days("date")) \
             .createOrReplace()
+    
