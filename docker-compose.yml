@@ -112,6 +112,19 @@ services:
       postgres:
         condition: service_healthy
 
+  trino:
+    image: trinodb/trino:475
+    container_name: trino
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./docker/trino/etc:/etc/trino/
+    depends_on:
+        minio:
+          condition: service_healthy
+        nessie:
+          condition: service_started
+
 volumes:
   postgres-data:
   minio-data:
