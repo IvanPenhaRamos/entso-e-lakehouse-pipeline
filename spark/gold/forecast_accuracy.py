@@ -3,7 +3,7 @@ from pyspark.sql.functions import days #type:ignore
 from spark.spark_session import get_spark_session
 from spark.utils import chop_date
 
-def production_per_day_per_country(execution_date):
+def forecast_accuracy(execution_date):
 
     spark = get_spark_session()
 
@@ -15,20 +15,22 @@ def production_per_day_per_country(execution_date):
 
     spark.sql("CREATE NAMESPACE IF NOT EXISTS nessie.gold")
 
-    df.createOrReplaceTempView("production_view")
+    df.createOrReplaceTempView("forecast_accuracy_view")
 
-    query = "SELECT to_date(datetime)   AS date, \
+    query = "SELECT to_date(datetime) AS date, \
                     country_code, \
-                    ROUND(SUM(actual_load_mw),2) AS total_actual_mw, \
-                    ROUND(MAX(actual_load_mw),2) AS max_actual_mw,\
-                    ROUND(MIN(actual_load_mw),2) AS min_actual_mw \
-            FROM production_view \
+                    SUM(actual_load_mw) AS total_actual_load_mw, \
+                    SUM(forecast_load_mw) AS total_forecast_load_mw, \
+                    ROUND(AVG(ABS(actual_load_mw - forecast_load_mw)), 2) AS mae, \
+                    ROUND(AVG(ABS(actual_load_mw - forecast_load_mw) / actual_load_mw * 100), 2) AS mape, \
+                    ROUND(AVG(actual_load_mw - forecast_load_mw), 2) AS bias \
+            FROM forecast_accuracy_view \
             GROUP BY to_date(datetime), \
                     country_code"
 
     gold_df = spark.sql(query)
 
-    gold_df.writeTo("nessie.gold.production_per_day_per_country") \
+    gold_df.writeTo("nessie.gold.forecast_accuracy") \
             .partitionedBy(days("date")) \
             .createOrReplace()
     

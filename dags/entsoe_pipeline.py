@@ -10,7 +10,8 @@ from spark.gold.production_per_day_per_country import production_per_day_per_cou
 from spark.gold.verify_production import verify_production
 from spark.gold.energy_mix_per_country import energy_mix_per_country
 from spark.gold.verify_energy_mix import verify_energy_mix
-
+from spark.gold.forecast_accuracy import forecast_accuracy
+from spark.gold.verify_forecast_accuracy import verify_forecast_accuracy
 
 with DAG(
     dag_id="entsoe_pipeline",
@@ -26,8 +27,11 @@ with DAG(
     task_G1_verify = PythonOperator(task_id="verify_production", python_callable=verify_production, op_kwargs={"execution_date":"{{ ds }}"})
     task_G2 = PythonOperator(task_id="energy_mix_per_country", python_callable=energy_mix_per_country, op_kwargs={"execution_date":"{{ ds }}"})
     task_G2_verify = PythonOperator(task_id="verify_energy_mix", python_callable=verify_energy_mix, op_kwargs={"execution_date":"{{ ds }}"})
+    task_G3 = PythonOperator(task_id="forecast_accuracy", python_callable=forecast_accuracy, op_kwargs={"execution_date":"{{ ds }}"})    
+    task_G3_verify = PythonOperator(task_id="verify_forecast_accuracy", python_callable=verify_forecast_accuracy, op_kwargs={"execution_date":"{{ ds }}"})
 
 
-    task_R1 >> task_R2 >> task_S1 >> task_S2 >> [task_G1, task_G2]
+    task_R1 >> task_R2 >> task_S1 >> task_S2 >> [task_G1, task_G2, task_G3]
     task_G1 >> task_G1_verify
     task_G2 >> task_G2_verify
+    task_G3 >> task_G3_verify
