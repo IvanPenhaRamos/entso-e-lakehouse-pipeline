@@ -1,22 +1,33 @@
-from pyspark.sql.functions import col, to_timestamp # type:ignore
+from pyspark.sql.functions import col, days # type:ignore
 
 from spark.spark_session import get_spark_session
-from spark. utils import chop_date
+
 
 def transform_data(execution_date: str):
 
     spark = get_spark_session()
 
-    year, month, day = chop_date(execution_date)
-
     df = spark.read \
-    .option("basePath", "s3a://raw/entsoe/") \
-    .parquet(f"s3a://raw/entsoe/year={year}/month={month}/day={day}")
+    .table("nessie.raw.entsoe_raw") \
+    .filter(col("date") == execution_date)
 
     transformed_df = df \
-        .withColumn("datetime",to_timestamp(col("datetime"),"yyyy-MM-dd HH:mm:ss")) \
         .dropDuplicates(["datetime","country_code","production_type"]) \
         .filter("actual_load_mw > 0") \
         .filter("forecast_load_mw > 0")
     
-    transformed_df.write.mode("overwrite").partitionBy("year","month","day").parquet("s3a://silver/entsoe/")
+    spark.sql("CREATE NAMESPACE IF NOT EXISTS nessie.silver")
+
+    spark.sql("CREATE TABLE IF NOT EXISTS nessie.silver.entsoe_transformed ( \
+                actual_load_mw DOUBLE, \
+                country_code STRING, \
+                datetime TIMESTAMP, \
+                forecast_load_mw DOUBLE, \
+                production_type STRING, \
+                date DATE \
+                ) USING iceberg \
+                PARTITIONED BY (days(date))")
+
+    transformed_df.writeTo("nessie.silver.entsoe_transformed") \
+        .partitionedBy(days("date")) \
+        .append()

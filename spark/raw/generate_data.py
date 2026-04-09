@@ -1,7 +1,7 @@
 from random import uniform
+from pyspark.sql.functions import col #type:ignore
 
 from spark.spark_session import get_spark_session
-from spark.utils import chop_date
 
 COUNTRIES = ["ES", "PT", "FR", "GB", "IR", "DE"]
 PRODUCTION_TYPE = ["Solar", "Wind", "Hydro", "Nuclear", "Gas", "Coal", "Oil"]
@@ -11,8 +11,6 @@ def generate_data(execution_date: str):
     spark = get_spark_session()
     
     data = []
-
-    year, month, day = chop_date(execution_date)
 
     for hour in range(24):
         for country in COUNTRIES:
@@ -26,12 +24,12 @@ def generate_data(execution_date: str):
                     "country_code":country,
                     "production_type":p_type,
                     "actual_load_mw":actual_load_mw,
-                    "forecast_load_mw":forecast_load_mw,
-                    "year":year,
-                    "month":month,
-                    "day":day
+                    "forecast_load_mw":forecast_load_mw
                 })
 
     df = spark.createDataFrame(data)
+
+    datetime_df = df.withColumn("datetime", col("datetime").cast("timestamp"))
     
-    return df
+    return datetime_df
+

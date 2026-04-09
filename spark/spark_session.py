@@ -10,7 +10,7 @@ def get_spark_session():
                     .config("spark.sql.catalog.nessie.catalog-impl", "org.apache.iceberg.nessie.NessieCatalog") \
                     .config("spark.sql.catalog.nessie.uri", "http://nessie:19120/api/v1") \
                     .config("spark.sql.catalog.nessie.ref", "main") \
-                    .config("spark.sql.catalog.nessie.warehouse","s3a://raw/iceberg") \
+                    .config("spark.sql.catalog.nessie.warehouse","s3a://lakehouse") \
                     .config("spark.hadoop.fs.s3a.endpoint", "http://minio:9000") \
                     .config("spark.hadoop.fs.s3a.access.key", os.environ.get("MINIO_ROOT_USER")) \
                     .config("spark.hadoop.fs.s3a.secret.key", os.environ.get("MINIO_ROOT_PASSWORD")) \

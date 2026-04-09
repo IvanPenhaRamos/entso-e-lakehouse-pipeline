@@ -1,17 +1,16 @@
-from spark.spark_session import get_spark_session
-from spark.utils import chop_date
+from pyspark.sql.functions import col #type:ignore
 
-def verify_raw(execution_date):
+from spark.spark_session import get_spark_session
+
+def verify_raw(execution_date: str):
 
     spark = get_spark_session()
     
-    year, month, day = chop_date(execution_date)
+    df = spark.read.table("nessie.raw.entsoe_raw")
 
-    path = f"s3a://raw/entsoe/year={year}/month={month}/day={day}"
-    
-    df = spark.read.parquet(path)
+    today_df = df.filter(col("date") == execution_date)
 
-    count = df.count()
+    count = today_df.count()
     
     if count == 0:
         raise ValueError(f"No data written for {execution_date}")

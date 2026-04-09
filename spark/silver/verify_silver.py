@@ -1,14 +1,14 @@
+from pyspark.sql.functions import col #type:ignore
+
 from spark.spark_session import get_spark_session
-from spark.utils import chop_date
 
 def verify_silver(execution_date):
 
     spark = get_spark_session()
 
-    year, month, day = chop_date(execution_date)
-
-    df = spark.read.option("basePath", "s3a://silver/entsoe/") \
-        .parquet(f"s3a://silver/entsoe/year={year}/month={month}/day={day}")
+    df = spark.read \
+        .table("nessie.silver.entsoe_transformed") \
+        .filter(col("date") == execution_date)
 
     count = df.count()
     

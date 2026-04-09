@@ -1,4 +1,4 @@
-from pyspark.sql.functions import to_date, lit, col #type:ignore
+from pyspark.sql.functions import col #type:ignore
 
 from spark.spark_session import get_spark_session
 
@@ -8,7 +8,7 @@ def verify_production(execution_date):
 
     df = spark.table("nessie.gold.production_per_day_per_country")
 
-    today_df = df.where(col("date") == to_date(lit(execution_date)))
+    today_df = df.where(col("date") == execution_date)
     
     rows_count = today_df.count()
     

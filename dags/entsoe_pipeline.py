@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from spark.raw.write_raw import write_raw
 from spark.raw.verify_raw import verify_raw
@@ -16,8 +16,9 @@ from spark.gold.verify_forecast_accuracy import verify_forecast_accuracy
 with DAG(
     dag_id="entsoe_pipeline",
     schedule="0 0 * * *",
-    start_date=datetime(2024,1,1),
-    catchup=False
+    start_date=datetime(2026, 3, 7),
+    catchup=True,
+    max_active_runs=1
 ) as dag:
     task_R1 = PythonOperator(task_id="write_raw", python_callable=write_raw, op_kwargs={"execution_date":"{{ ds }}"})
     task_R2 = PythonOperator(task_id="verify_raw", python_callable=verify_raw, op_kwargs={"execution_date":"{{ ds }}"})
