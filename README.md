@@ -55,7 +55,7 @@ entsoe-pipeline/
 
 1. Clona el repositorio:
 ```bash
-   git clone https://github.com/tuusuario/entsoe-pipeline.git
+   git clone https://github.com/IvanPenhaRamos/entso-e-lakehouse-pipeline.git
    cd entsoe-pipeline
 ```
 
